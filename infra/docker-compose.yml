@@ -1,0 +1,44 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: alert-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  mysql-e:
+    image: mysql:8.4
+    container_name: alert-mysql-e
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: server_e
+      MYSQL_USER: server_e
+      MYSQL_PASSWORD: server_e_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_e_data:/var/lib/mysql
+
+  mysql-d:
+    image: mysql:8.4
+    container_name: alert-mysql-d
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: server_d
+      MYSQL_USER: server_d
+      MYSQL_PASSWORD: server_d_password
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_d_data:/var/lib/mysql
+
+volumes:
+  redis_data:
+  mysql_e_data:
+  mysql_d_data:
