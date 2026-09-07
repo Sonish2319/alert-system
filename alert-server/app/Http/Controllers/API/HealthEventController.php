@@ -35,7 +35,7 @@ class HealthEventController extends Controller
             'status' => $event->status,
             'transition' => $result['transition'],
             'previous_status' => $result['previous_status'],
-            'state' => $result['state'],
+            'state' => $result['current_state'],
         ]);
     }
 

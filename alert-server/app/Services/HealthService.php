@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Redis;
 
 class HealthService
 {
+    public function __construct(
+        private readonly HealthEventBroadcaster $broadcaster,
+    ) {
+    }
+
     public function process(HealthEvent $event): array
     {
         $key = $this->stateKey($event->service);
@@ -15,12 +20,12 @@ class HealthService
         $previous = Redis::get($key);
 
         $previousState = $previous
-            ? json_decode($previous, true)  // json_decode converts JSON string to associative array
+            ? json_decode($previous, true)
             : null;
 
         $previousStatus = $previousState['status'] ?? 'UNKNOWN';
 
-        $transition = $previousStatus !== $event->status;  // Check if the status has changed to prevent duplicate logs for the same status
+        $transition = $previousStatus !== $event->status;
 
         $state = [
             'service' => $event->service,
@@ -44,20 +49,34 @@ class HealthService
                 'to' => $event->status,
                 'component' => $event->component,
                 'reason' => $event->reason,
+                'message' => $event->message,
+                'timestamp' => $state['timestamp'],
+            ]);
+
+            $this->broadcaster->broadcast([
+                'type' => 'health_state_changed',
+                'service' => $event->service,
+                'previous_status' => $previousStatus,
+                'status' => $event->status,
+                'component' => $event->component,
+                'reason' => $event->reason,
+                'message' => $event->message,
+                'timestamp' => $state['timestamp'],
             ]);
         } else {
-            Log::debug('Duplicate health state ignored for broadcast', [
+            Log::debug('Duplicate health state', [
                 'service' => $event->service,
                 'status' => $event->status,
             ]);
         }
 
         return [
-            'state' => $state,
             'transition' => $transition,
             'previous_status' => $previousStatus,
+            'current_state' => $state,
         ];
     }
+
 
     public function getState(string $service): ?array
     {

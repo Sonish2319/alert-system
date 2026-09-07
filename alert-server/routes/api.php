@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\HealthEventController;
+use App\Http\Controllers\Api\HealthEventStreamController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -16,4 +17,8 @@ Route::prefix('v1')->group(function () {
         [HealthEventController::class, 'status']
     );
 
+    Route::get(
+        '/events/stream',
+        [HealthEventStreamController::class, 'stream']
+    );
 });

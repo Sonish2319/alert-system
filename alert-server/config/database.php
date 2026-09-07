@@ -158,6 +158,9 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
+
+            // Required for long-lived Redis Pub/Sub connections.
+            'read_write_timeout' => -1,
         ],
 
         'cache' => [
